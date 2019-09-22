@@ -1,0 +1,3 @@
+useDynLib(HypergeoMatRcpp)
+importFrom(Rcpp, evalCpp)
+exportPattern("^[[:alpha:]]+")

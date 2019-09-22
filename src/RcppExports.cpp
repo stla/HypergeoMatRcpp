@@ -6,46 +6,9 @@
 
 using namespace Rcpp;
 
-// cleanPart2
-IntegerVector cleanPart2(IntegerVector kappa);
-RcppExport SEXP _HypergeoMatRcpp_cleanPart2(SEXP kappaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerVector >::type kappa(kappaSEXP);
-    rcpp_result_gen = Rcpp::wrap(cleanPart2(kappa));
-    return rcpp_result_gen;
-END_RCPP
-}
-// dualPartition
-IntegerVector dualPartition(IntegerVector kappa, int to);
-RcppExport SEXP _HypergeoMatRcpp_dualPartition(SEXP kappaSEXP, SEXP toSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerVector >::type kappa(kappaSEXP);
-    Rcpp::traits::input_parameter< int >::type to(toSEXP);
-    rcpp_result_gen = Rcpp::wrap(dualPartition(kappa, to));
-    return rcpp_result_gen;
-END_RCPP
-}
-// T_
-double T_(double alpha, NumericVector a, NumericVector b, IntegerVector kappa);
-RcppExport SEXP _HypergeoMatRcpp_T_(SEXP alphaSEXP, SEXP aSEXP, SEXP bSEXP, SEXP kappaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type a(aSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type kappa(kappaSEXP);
-    rcpp_result_gen = Rcpp::wrap(T_(alpha, a, b, kappa));
-    return rcpp_result_gen;
-END_RCPP
-}
-// hypergeom
-double hypergeom(int m, NumericVector a, NumericVector b, NumericVector x, double alpha);
-RcppExport SEXP _HypergeoMatRcpp_hypergeom(SEXP mSEXP, SEXP aSEXP, SEXP bSEXP, SEXP xSEXP, SEXP alphaSEXP) {
+// Rcpp_hypergeomPFQ
+double Rcpp_hypergeomPFQ(int m, NumericVector a, NumericVector b, NumericVector x, double alpha);
+RcppExport SEXP _HypergeoMatRcpp_Rcpp_hypergeomPFQ(SEXP mSEXP, SEXP aSEXP, SEXP bSEXP, SEXP xSEXP, SEXP alphaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -54,52 +17,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    rcpp_result_gen = Rcpp::wrap(hypergeom(m, a, b, x, alpha));
-    return rcpp_result_gen;
-END_RCPP
-}
-// test
-double test(NumericVector x);
-RcppExport SEXP _HypergeoMatRcpp_test(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(test(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// test2
-NumericVector test2(int k);
-RcppExport SEXP _HypergeoMatRcpp_test2(SEXP kSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type k(kSEXP);
-    rcpp_result_gen = Rcpp::wrap(test2(k));
-    return rcpp_result_gen;
-END_RCPP
-}
-// test3
-int test3(IntegerVector mu);
-RcppExport SEXP _HypergeoMatRcpp_test3(SEXP muSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerVector >::type mu(muSEXP);
-    rcpp_result_gen = Rcpp::wrap(test3(mu));
+    rcpp_result_gen = Rcpp::wrap(Rcpp_hypergeomPFQ(m, a, b, x, alpha));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_HypergeoMatRcpp_cleanPart2", (DL_FUNC) &_HypergeoMatRcpp_cleanPart2, 1},
-    {"_HypergeoMatRcpp_dualPartition", (DL_FUNC) &_HypergeoMatRcpp_dualPartition, 2},
-    {"_HypergeoMatRcpp_T_", (DL_FUNC) &_HypergeoMatRcpp_T_, 4},
-    {"_HypergeoMatRcpp_hypergeom", (DL_FUNC) &_HypergeoMatRcpp_hypergeom, 5},
-    {"_HypergeoMatRcpp_test", (DL_FUNC) &_HypergeoMatRcpp_test, 1},
-    {"_HypergeoMatRcpp_test2", (DL_FUNC) &_HypergeoMatRcpp_test2, 1},
-    {"_HypergeoMatRcpp_test3", (DL_FUNC) &_HypergeoMatRcpp_test3, 1},
+    {"_HypergeoMatRcpp_Rcpp_hypergeomPFQ", (DL_FUNC) &_HypergeoMatRcpp_Rcpp_hypergeomPFQ, 5},
     {NULL, NULL, 0}
 };
 

@@ -4,8 +4,10 @@
 #include "RcppArmadillo.h"
 // [[Rcpp::depends(RcppArmadillo)]]
 #include "Dico.h"
+#include <complex>
 using namespace std; 
 using namespace Rcpp;
+
 
 Dico DictParts(int m, int n){
   unordered_map<int,int> D;
@@ -32,15 +34,14 @@ Dico DictParts(int m, int n){
   return out;
 }
 
-// [[Rcpp::export]]
-IntegerVector cleanPart2(IntegerVector kappa){
+
+IntegerVector cleanPart(IntegerVector kappa){
   return kappa[kappa>0];
 }
 
 
-// [[Rcpp::export]]
 IntegerVector dualPartition(IntegerVector kappa, int to = -1){
-  kappa = cleanPart2(kappa);
+  kappa = cleanPart(kappa);
   int l = kappa.size();
   if(l == 0){
     return IntegerVector(0);
@@ -60,6 +61,7 @@ IntegerVector dualPartition(IntegerVector kappa, int to = -1){
   return out;
 }
 
+
 NumericVector sequence(int start, int end){
   int lout = end-start+1;
   NumericVector out = NumericVector(lout);
@@ -68,6 +70,7 @@ NumericVector sequence(int start, int end){
   }
   return out;
 }
+
 
 double product(NumericVector v){
   double out = 1;
@@ -79,12 +82,12 @@ double product(NumericVector v){
 
 
 double betaratio(IntegerVector kappa, IntegerVector mu, int k, double alpha){
-  double t = (double)k - alpha * (double)mu[k-1];
+  double t = (double)k - alpha * (double)mu(k-1);
   NumericVector v;
   if(k > 1){  
     NumericVector mu_dbl = as<NumericVector>(mu);
     NumericVector ss = sequence(1, k-1);
-    v = alpha*mu_dbl[seq(0,k-2)] - ss + t;
+    v = alpha * mu_dbl[Range(0,k-2)] - ss + t;
   }else{
     v = NumericVector(0);
   }
@@ -92,14 +95,14 @@ double betaratio(IntegerVector kappa, IntegerVector mu, int k, double alpha){
   if(k > 0){
     NumericVector kappa_dbl = as<NumericVector>(kappa);
     NumericVector sss = sequence(1, k);
-    u = alpha*kappa_dbl[seq(0,k-1)] - sss + t + 1.0;
+    u = alpha * kappa_dbl[Range(0,k-1)] - sss + t + 1.0;
   }else{
     u = NumericVector(0);
   }
-  int l = mu[k-1] - 1;
+  int l = mu(k-1) - 1;
   NumericVector w;
   if(l > 0){
-    IntegerVector muDual = dualPartition(mu,l); //[Range(0,l-1)];
+    IntegerVector muDual = dualPartition(mu,l); 
     NumericVector muPrime = as<NumericVector>(muDual);
     NumericVector lrange = sequence(1,l);
     w = muPrime - alpha*lrange - t;
@@ -112,9 +115,8 @@ double betaratio(IntegerVector kappa, IntegerVector mu, int k, double alpha){
   return alpha * prod1 * prod2 * prod3;
 }
 
-// [[Rcpp::export]]
+
 double T_(double alpha, NumericVector a, NumericVector b, IntegerVector kappa){
-  //kappa = cleanPart2(kappa); // pas dans Haskell
   int lkappa = kappa.size();
   if(lkappa == 0 || kappa(0) == 0){
     return 1.0;
@@ -155,62 +157,18 @@ double T_(double alpha, NumericVector a, NumericVector b, IntegerVector kappa){
 }
 
 
-// NumericMatrix jack(double alpha, NumericVector x, unordered_map<int,int> dico, 
-//                    int k, double beta, int c, int t, IntegerVector &mu, 
-//                    NumericMatrix &jarray, IntegerVector &kappa, int nkappa){
-//   int i0 = k > 1 ? k : 1;
-//   int i1 = cleanPart2(mu).size();
-//   for(int i = i0; i <= i1; i++){
-//     int u = mu[i-1];
-//     if(mu.size() == i || u > mu[i]){
-//       double gamma = beta * betaratio(kappa, mu, i, alpha);
-//       IntegerVector muP = clone(mu);
-//       muP[i-1] = u-1;
-//       muP = cleanPart2(muP);
-//       int nmuP = 0;
-//       for(int j = 0; j < muP.size(); j++){
-//         nmuP = dico.at(nmuP) + muP[j] - 1;
-//       }
-//       if(muP.size() >= i && u > 1){
-//         jarray = jack(alpha, x, dico, i, gamma, c + 1, t, muP, jarray, kappa, nkappa);
-//       }else{
-//         if(nkappa > 1){
-//           if(muP[0]>0){ // any(muP>0)
-//             jarray(nkappa-1, t-1) = jarray(nkappa-1, t-1) + gamma * 
-//               jarray(nmuP-1, t-2) * pow(x[t-1],c+1);
-//           }else{
-//             jarray(nkappa-1, t-1) = jarray(nkappa-1, t-1) + gamma * pow(x[t-1],c+1);
-//           }
-//         }
-//       }
-//     }
-//   }
-//   if(k == 0){
-//     if(nkappa > 1){
-//       jarray(nkappa-1, t-1) = jarray(nkappa-1, t-1) + jarray(nkappa-1, t-2);
-//     }
-//   }else{
-//     int nmu = 0;
-//     for(int i = 0; i < mu.size(); i++){
-//       nmu = dico.at(nmu) + mu[i] - 1;
-//     }
-//     jarray(nkappa-1, t-1) = jarray(nkappa-1, t-1) + beta * pow(x[t-1],c) * 
-//       jarray(nmu - 1, t-2);
-//   }
-//   return jarray;
-// }
 void jack(double alpha, NumericVector x, unordered_map<int,int> dico, 
                    int k, double beta, int c, int t, IntegerVector mu, 
                    NumericMatrix& jarray, IntegerVector kappa, int nkappa){
   int i0 = k > 1 ? k : 1;
-  int i1 = mu.size(); //cleanPart2(mu).size();
+  int i1 = mu.size(); 
   for(int i = i0; i <= i1; i++){
     int u = mu(i-1);
     if(mu.size() == i || u > mu(i)){
       double gamma = beta * betaratio(kappa, mu, i, alpha);
       IntegerVector muP = clone(mu);
       muP(i-1) = u-1;
-      muP = cleanPart2(muP);
+      muP = cleanPart(muP);
       int nmuP = 0;
       for(int j = 0; j < muP.size(); j++){
         nmuP = dico.at(nmuP) + muP(j) - 1;
@@ -219,7 +177,7 @@ void jack(double alpha, NumericVector x, unordered_map<int,int> dico,
         jack(alpha, x, dico, i, gamma, c + 1, t, muP, jarray, kappa, nkappa);
       }else{
         if(nkappa > 1){
-          if(muP.size() > 0 && muP(0)>0){ // any(muP>0)
+          if(muP.size() > 0 && muP(0)>0){ 
             jarray(nkappa-1, t-1) += gamma * 
               jarray(nmuP-1, t-2) * pow(x(t-1),c+1);
           }else{
@@ -244,59 +202,13 @@ void jack(double alpha, NumericVector x, unordered_map<int,int> dico,
 }
 
 
-// double summation(NumericVector a, NumericVector b, NumericVector x,
-//                  unordered_map<int,int> dico, int n, double alpha, int i,
-//                  double z, int j, IntegerVector &kappa, NumericMatrix &jarray){
-//   // if(i == n){
-//   //   return 0.0;
-//   // }
-// // kappa = cleanPart2(kappa);
-//   int lkappa = kappa.size();
-//   int lastkappa = lkappa==0 ? 1000 : kappa[lkappa - 1];
-//   // printf("lastkappa: %i\n", lastkappa);
-//   int kappai = 1;
-//   double s = 0.0;
-//   while((i>0 || kappai<=j) && (i==0 || (kappai <= lastkappa && kappai <= j))){
-//     IntegerVector kappaP(lkappa+1);
-//     for(int k=0; k < lkappa; k++){
-//       kappaP[k] = kappa[k];
-//     }
-//     kappaP[lkappa] = kappai;
-//     int nkappaP = 0;
-//     int lkappaP = kappaP.size();
-//     for(int k = 0; k < lkappaP; k++){
-//       nkappaP = dico.at(nkappaP) + kappaP[k] - 1;
-//     }
-//     z = z * T_(alpha, a, b, kappaP);
-//     if(nkappaP >1 && (lkappaP == 1 || kappaP[1] == 0)){
-//       jarray(nkappaP-1, 0) = x[0] * (1.0 + alpha * (double)(kappaP[0]-1)) *
-//         jarray(nkappaP-2, 0);
-//     }
-//     for(int t = 2; t <= n; t++){
-//       jarray = jack(alpha, x, dico, 0, 1.0, 0, t, kappaP, jarray, kappaP, nkappaP);
-//     }
-//     s = s + z * jarray(nkappaP-1, n-1);
-//     if(j > kappai && i <= n){
-//       if(i+1 == n){
-//         return s;
-//       }
-//       s += summation(a, b, x, dico, n, alpha, i+1, z, j-kappai, kappaP, jarray);
-//     }
-//     kappai += 1;
-//   }
-//   return s;
-// }
-
 double summation(NumericVector a, NumericVector b, NumericVector x,
                  unordered_map<int,int> dico, int n, double alpha, int i,
                  double z, int j, IntegerVector kappa, NumericMatrix &jarray){
   if(i == n){
     return 0.0;
   }
-  // kappa = cleanPart2(kappa);
   int lkappa = kappa.size();
-//  int lastkappa = lkappa==0 ? 999999 : kappa(lkappa - 1);
-  // printf("lastkappa: %i\n", lastkappa);
   int kappai = 1;
   double s = 0.0;
   while((i>0 || kappai<=j) && (i==0 || ((lkappa==0 || kappai <= kappa(lkappa-1)) && kappai <= j))){
@@ -320,9 +232,6 @@ double summation(NumericVector a, NumericVector b, NumericVector x,
     }
     s += z * jarray(nkappaP-1, n-1);
     if(j > kappai && i <= n){
-      // if(i+1 == n){
-      //   return s;
-      // }
       s += summation(a, b, x, dico, n, alpha, i+1, z, j-kappai, kappaP, jarray);
     }
     kappai += 1;
@@ -331,56 +240,21 @@ double summation(NumericVector a, NumericVector b, NumericVector x,
 }
 
 // [[Rcpp::export]]
-double hypergeom(int m, NumericVector a, NumericVector b, NumericVector x, 
-                 double alpha = 2.0){
+double Rcpp_hypergeomPFQ(int m, NumericVector a, NumericVector b, NumericVector x, 
+                 double alpha){
   int n = x.size();
   Dico dict = DictParts(m, n);
   NumericMatrix jarray(dict.last, n);
   NumericVector xx = cumsum(x);
-  // printf("size cumsum: %i\n", xx.size());
-  // jarray(0, _) = xx;
   for(int j = 0; j < n; j++){
     jarray(0,j) = xx(j);
   }
   IntegerVector emptyPart = IntegerVector(0);
   double s = summation(a, b, x, dict.dict, n, alpha, 0, 1.0, m, emptyPart, jarray);
-  // for(int i=0; i<dict.last; i++){
-  //   for(int j=0; j<n; j++){
-  //     printf("jarray(%i)(%i) = %f\n", i, j, jarray(i,j));
-  //   }
-  // }
   return 1.0 + s;
 }
 
-// [[Rcpp::export]]
-double test(NumericVector x){
-  int n = x.size();
-  NumericMatrix jarray(4, n);
-  NumericVector xx = cumsum(x);
-  for(int j = 0; j < n; j++){
-    jarray(0,j) = xx[j];
-  }
-  for(int i = 0; i < 4; i++){
-    for(int j = 0; j < n; j++){
-      Rprintf("jarray[%i][%i] = %f\n", i, j, jarray[i,j]);
-      Rprintf("jarray(%i)(%i) = %f\n", i, j, jarray(i,j));
-    }
-  }
-  return 1.0;
-}
-
-// [[Rcpp::export]]
-NumericVector test2(int k){
-  NumericVector out;
-  if(k == 0){
-    out = NumericVector::create(1,2,3);
-  }else{
-    out = NumericVector(0);
-  }
-  return out;
-}
-
-// [[Rcpp::export]]
-int test3(IntegerVector mu){
-  return mu[0];
-}
+// // x[[Rcpp::export]]
+// ComplexVector test(ComplexVector x, NumericVector y){
+//   return x + (complex<double>)1.0;
+// }

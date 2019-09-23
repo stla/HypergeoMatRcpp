@@ -239,6 +239,7 @@ double summation(NumericVector a, NumericVector b, NumericVector x,
   return s;
 }
 
+
 // [[Rcpp::export]]
 double Rcpp_hypergeomPFQ(int m, NumericVector a, NumericVector b, NumericVector x, 
                  double alpha){
@@ -254,7 +255,3 @@ double Rcpp_hypergeomPFQ(int m, NumericVector a, NumericVector b, NumericVector 
   return 1.0 + s;
 }
 
-// // x[[Rcpp::export]]
-// ComplexVector test(ComplexVector x, NumericVector y){
-//   return x + (complex<double>)1.0;
-// }

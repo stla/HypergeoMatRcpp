@@ -16,7 +16,7 @@ test_that("Gauss formula", {
   b <- 2
   c <- 9
   o1 <- mvgamma(c,3)*mvgamma(c-a-b,3)/mvgamma(c-a,3)/mvgamma(c-b,3)
-  o2 <- hypergeomPFQ(30, c(a,b), c, c(1,1,1))
-  expect_equal(o1, o2, tolerance = 1e-3)
+  o2 <- hypergeomPFQ(60, c(a,b), c, c(1,1,1))
+  expect_equal(o1, o2, tolerance = 1e-5)
 })
 

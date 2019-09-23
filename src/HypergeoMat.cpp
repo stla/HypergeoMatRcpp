@@ -240,9 +240,41 @@ double summation(NumericVector a, NumericVector b, NumericVector x,
 }
 
 
+double summationI(NumericVector a, NumericVector b, double x, int n, 
+                  double alpha, int i, double z, int j, IntegerVector kappa){
+  int lkappa = kappa.size();
+  int kappai = 1;
+  double s = 0.0;
+  while((i>0 || kappai<=j) && (i==0 || kappai <= kappa(i-1) && kappai <= j)){
+    IntegerVector kappaP(lkappa+1);
+    for(int k=0; k < lkappa; k++){
+      kappaP(k) = kappa(k);
+    }
+    kappaP(lkappa) = kappai;
+    double t = T_(alpha, a, b, kappaP);
+    z = z * x * t * ((double)(n-i) + alpha * (double)(kappai-1));
+    if(j > kappai && i <= n){
+      s += summationI(a, b, x, n, alpha, (i+1), z, (j-kappai), kappaP);
+    }
+    s += z;
+    kappai += 1;
+  }
+  return s;
+}
+
+
+double hypergeoI(int m, double alpha, NumericVector a, NumericVector b, 
+                 int n, double x){
+  return 1.0 + summationI(a, b, x, n, alpha, 0, 1.0, m, IntegerVector(0));
+}
+
+
 // [[Rcpp::export]]
 double Rcpp_hypergeomPFQ(int m, NumericVector a, NumericVector b, NumericVector x, 
                  double alpha){
+  if(is_true(all(x == x(0)))){
+    return hypergeoI(m, alpha, a, b, x.size(), x(0));
+  }
   int n = x.size();
   Dico dict = DictParts(m, n);
   NumericMatrix jarray(dict.last, n);

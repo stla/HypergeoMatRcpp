@@ -10,3 +10,8 @@ isPositiveInteger <- function(m){
 isNotNegativeInteger <- function(z){
   Im(z) != 0 || Re(z)>0 || Re(z) != trunc(Re(z))
 }
+
+isSymmetricPositive <- function(M){
+  isSymmetric(M) && all(eigen(M, symmetric = TRUE, only.values = TRUE)$values >= 0)
+}
+

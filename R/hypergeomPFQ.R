@@ -4,16 +4,22 @@
 #' argument.
 #'
 #' @param m truncation weight of the summation, a positive integer
-#' @param a the "upper" parameters, a numeric or complex vector,
+#' @param a the "upper" parameters, a numeric vector,
 #' possibly empty (or \code{NULL})
-#' @param b the "lower" parameters, a numeric or complex vector,
+#' @param b the "lower" parameters, a numeric vector,
 #' possibly empty (or \code{NULL})
-#' @param x either a real or complex square matrix,
-#' or a numeric or complex vector, the eigenvalues of the matrix
+#' @param x either a real or complex square matrix with real eigenvalues,
+#' or a numeric vector, the eigenvalues of the matrix
 #' @param alpha the alpha parameter, a positive number
 #'
-#' @return A real or a complex number.
+#' @return A real number.
 #' @export
+#' 
+#' @details This is an implementation of Koev & Edelman's algorithm
+#' (see the reference). This algorithm is split into two parts: the case of
+#' a scalar matrix (multiple of an identity matrix) and the general case.
+#' The case of a scalar matrix is much faster (try e.g. \code{x = c(1,1,1)} vs
+#' \code{x = c(1,1,0.999)}).
 #'
 #' @note The hypergeometric function of a matrix argument is usually defined
 #' for a symmetric real matrix or a Hermitian complex matrix.
@@ -43,8 +49,8 @@
 hypergeomPFQ <- function(m, a, b, x, alpha = 2){
   stopifnot(
     isPositiveInteger(m),
-    is.null(a) || (is.vector(a) && is.atomic(a)),
-    is.null(b) || (is.vector(b) && is.atomic(b)),
+    is.null(a) || (is.vector(a) && is.atomic(a) && is.numeric(a)),
+    is.null(b) || (is.vector(b) && is.atomic(b) && is.numeric(b)),
     is.vector(alpha) && is.atomic(alpha),
     length(alpha) == 1L,
     is.numeric(alpha),
@@ -52,8 +58,11 @@ hypergeomPFQ <- function(m, a, b, x, alpha = 2){
   )
   if(is.matrix(x)){
     x <- eigen(x, only.values = TRUE)$values
+    if(any(is.complex(x))){
+      stop("The eigenvalues of `x` are not all real")
+    }
   }else{
-    stopifnot(is.atomic(x), is.numeric(x) || is.complex(x))
+    stopifnot(is.atomic(x), is.numeric(x))
   }
   if(is.null(a)){
     a <- numeric(0)
@@ -61,9 +70,5 @@ hypergeomPFQ <- function(m, a, b, x, alpha = 2){
   if(is.null(b)){
     b <- numeric(0)
   }
-  # if(all(x == x[1L])){
-  #   return(HypergeoI(m, alpha, a, b, length(x), x[1L]))
-  # }
-  #
   Rcpp_hypergeomPFQ(m = as.integer(m), a = a, b = b, x = x, alpha = alpha)
 }

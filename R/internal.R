@@ -1,5 +1,6 @@
 #' @useDynLib HypergeoMatRcpp
 #' @importFrom Rcpp evalCpp
+#' @importFrom HypergeoMat mvgamma mvbeta
 NULL
 
 isPositiveInteger <- function(m){

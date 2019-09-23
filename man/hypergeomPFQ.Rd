@@ -9,23 +9,30 @@ hypergeomPFQ(m, a, b, x, alpha = 2)
 \arguments{
 \item{m}{truncation weight of the summation, a positive integer}
 
-\item{a}{the "upper" parameters, a numeric or complex vector,
+\item{a}{the "upper" parameters, a numeric vector,
 possibly empty (or \code{NULL})}
 
-\item{b}{the "lower" parameters, a numeric or complex vector,
+\item{b}{the "lower" parameters, a numeric vector,
 possibly empty (or \code{NULL})}
 
-\item{x}{either a real or complex square matrix,
-or a numeric or complex vector, the eigenvalues of the matrix}
+\item{x}{either a real or complex square matrix with real eigenvalues,
+or a numeric vector, the eigenvalues of the matrix}
 
 \item{alpha}{the alpha parameter, a positive number}
 }
 \value{
-A real or a complex number.
+A real number.
 }
 \description{
 Evaluates a truncated hypergeometric function of a matrix
 argument.
+}
+\details{
+This is an implementation of Koev & Edelman's algorithm
+(see the reference). This algorithm is split into two parts: the case of
+a scalar matrix (multiple of an identity matrix) and the general case.
+The case of a scalar matrix is much faster (try e.g. \code{x = c(1,1,1)} vs
+\code{x = c(1,1,0.999)}).
 }
 \note{
 The hypergeometric function of a matrix argument is usually defined

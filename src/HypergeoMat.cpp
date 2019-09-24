@@ -4,7 +4,7 @@
 #include "RcppArmadillo.h"
 // [[Rcpp::depends(RcppArmadillo)]]
 #include "Dico.h"
-#include <complex>
+// #include <complex>
 using namespace std; 
 using namespace Rcpp;
 
@@ -40,20 +40,20 @@ IntegerVector cleanPart(IntegerVector kappa){
 }
 
 
-IntegerVector dualPartition(IntegerVector kappa, int to = -1){
+NumericVector dualPartition(IntegerVector kappa, int to = -1){
   kappa = cleanPart(kappa);
   int l = kappa.size();
   if(l == 0){
-    return IntegerVector(0);
+    return NumericVector(0);
   }
   int l0 = to == -1 ? kappa(0) : to; 
-  IntegerVector out = IntegerVector(l0);
-  out(0) = l; 
+  NumericVector out = NumericVector(l0);
+  out(0) = (double)l; 
   for(int i = 1; i < l0 ; i++){
-    int s = 0;
+    int s = 0.0;
     for(int j = 0; j < l; j++){
       if(kappa(j) > i){
-        s++;
+        s += 1.0;
       }
     }
     out(i) = s;
@@ -102,8 +102,8 @@ double betaratio(IntegerVector kappa, IntegerVector mu, int k, double alpha){
   int l = mu(k-1) - 1;
   NumericVector w;
   if(l > 0){
-    IntegerVector muDual = dualPartition(mu,l); 
-    NumericVector muPrime = as<NumericVector>(muDual);
+    NumericVector muPrime = dualPartition(mu, l); 
+//    NumericVector muPrime = as<NumericVector>(muDual);
     NumericVector lrange = sequence(1,l);
     w = muPrime - alpha*lrange - t;
   }else{
@@ -130,7 +130,7 @@ double T_(double alpha, NumericVector a, NumericVector b, IntegerVector kappa){
   NumericVector e;
   if(kappai > 1){
     NumericVector s = sequence(1, kappai-1);
-    NumericVector kappaPrime = as<NumericVector>(dualPartition(kappa, kappai-1));
+    NumericVector kappaPrime = dualPartition(kappa, kappai-1);
     e = kappaPrime - alpha*s + d;
   }else{
     e = NumericVector(0);
@@ -178,8 +178,8 @@ void jack(double alpha, NumericVector x, unordered_map<int,int> dico,
       }else{
         if(nkappa > 1){
           if(muP.size() > 0 && muP(0)>0){ 
-            jarray(nkappa-1, t-1) += gamma * 
-              jarray(nmuP-1, t-2) * pow(x(t-1),c+1);
+            jarray(nkappa-1, t-1) += gamma * jarray(nmuP-1, t-2) * 
+              pow(x(t-1),c+1);
           }else{
             jarray(nkappa-1, t-1) += gamma * pow(x(t-1),c+1);
           }
@@ -196,8 +196,7 @@ void jack(double alpha, NumericVector x, unordered_map<int,int> dico,
     for(int i = 0; i < mu.size(); i++){
       nmu = dico.at(nmu) + mu(i) - 1;
     }
-    jarray(nkappa-1, t-1) += beta * pow(x(t-1),c) * 
-      jarray(nmu - 1, t-2);
+    jarray(nkappa-1, t-1) += beta * pow(x(t-1),c) * jarray(nmu - 1, t-2);
   }
 }
 
@@ -209,16 +208,17 @@ double summation(NumericVector a, NumericVector b, NumericVector x,
     return 0.0;
   }
   int lkappa = kappa.size();
+  int lkappaP = lkappa + 1;
   int kappai = 1;
   double s = 0.0;
-  while((i>0 || kappai<=j) && (i==0 || ((lkappa==0 || kappai <= kappa(lkappa-1)) && kappai <= j))){
+  while((i>0 || kappai<=j) && 
+        (i==0 || ((lkappa==0 || kappai <= kappa(lkappa-1)) && kappai <= j))){
     IntegerVector kappaP(lkappa+1);
     for(int k=0; k < lkappa; k++){
       kappaP(k) = kappa(k);
     }
     kappaP(lkappa) = kappai;
     int nkappaP = 0;
-    int lkappaP = kappaP.size();
     for(int k = 0; k < lkappaP; k++){
       nkappaP = dico.at(nkappaP) + kappaP(k) - 1;
     }
@@ -270,8 +270,8 @@ double hypergeoI(int m, double alpha, NumericVector a, NumericVector b,
 
 
 // [[Rcpp::export]]
-double Rcpp_hypergeomPFQ(int m, NumericVector a, NumericVector b, NumericVector x, 
-                 double alpha){
+double Rcpp_hypergeomPFQ(int m, NumericVector a, NumericVector b, 
+                         NumericVector x, double alpha){
   if(is_true(all(x == x(0)))){
     return hypergeoI(m, alpha, a, b, x.size(), x(0));
   }
@@ -283,7 +283,8 @@ double Rcpp_hypergeomPFQ(int m, NumericVector a, NumericVector b, NumericVector 
     jarray(0,j) = xx(j);
   }
   IntegerVector emptyPart = IntegerVector(0);
-  double s = summation(a, b, x, dict.dict, n, alpha, 0, 1.0, m, emptyPart, jarray);
+  double s = 
+    summation(a, b, x, dict.dict, n, alpha, 0, 1.0, m, emptyPart, jarray);
   return 1.0 + s;
 }
 
